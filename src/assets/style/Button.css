@@ -1,0 +1,38 @@
+.btn {
+    outline: 0;
+    display: inline-block; /* Cambiado de inline-flex a inline-block */
+    align-items: center;
+    justify-content: center;
+    background: #9e4caf;
+    min-width: 402px;
+    border: 0;
+    border-radius: 25px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .2);
+    box-sizing: border-box;
+    padding: 16px 20px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    overflow: hidden;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    margin: 8px auto; /* Centrado horizontal */
+}
+
+
+.btn:hover {
+    background-color: #d68ccf;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, .3);
+}
+
+@keyframes ripple {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.1), 0 0 0 20px rgba(255, 255, 255, 0.1), 0 0 0 40px rgba(255, 255, 255, 0.1), 0 0 0 60px rgba(255, 255, 255, 0.1);
+    }
+
+    100% {
+        box-shadow: 0 0 0 20px rgba(255, 255, 255, 0.1), 0 0 0 40px rgba(255, 255, 255, 0.1), 0 0 0 60px rgba(255, 255, 255, 0.1), 0 0 0 80px rgba(255, 255, 255, 0);
+    }
+}
