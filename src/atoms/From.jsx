@@ -127,6 +127,14 @@ function Form() {
             });
             return; // Detiene la ejecución si la validación falla
         }    
+        if (anoInt < 1950 || anoInt > 2024) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'El año debe estar entre 1950 y 2024.',
+            });
+            return; // Detiene la ejecución si la validación falla
+        }
     
         if (mesInt === 2 && diaInt === 29 && !(anoInt % 4 === 0 && (anoInt % 100 !== 0 || anoInt % 400 === 0))) {
             Swal.fire({
