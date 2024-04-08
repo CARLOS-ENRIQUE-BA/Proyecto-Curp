@@ -17,7 +17,6 @@ function Form() {
     const [ano, setAno] = useState('');
     const [sexo, setSexo] = useState('');
     const [estado, setEstado] = useState('');
-    
 
     useEffect(() => {
         generateCaptcha();
@@ -41,7 +40,6 @@ function Form() {
         if (userInput !== captcha) {
             Swal.fire({
                 icon: 'error',
-                title: 'Oops...',
                 text: 'El captcha ingresado no coincide!',
             });
             generateCaptcha();
@@ -60,6 +58,16 @@ function Form() {
     const removeAccents = (str) => {
         return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
+
+    const generateRandomLetter = () => {
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        return alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+    };
+    
+    const generateRandomNumber = () => {
+        return Math.floor(Math.random() * 10);
+    };
+    
     
     const generateCURP = () => {
         const vowels = 'AEIOU';
@@ -72,6 +80,8 @@ function Form() {
         curp += removeAccents((Array.from(apellidoPaterno.slice(1)).find(c => consonants.includes(c.toUpperCase())) || ''));
         curp += removeAccents((Array.from(apellidoMaterno.slice(1)).find(c => consonants.includes(c.toUpperCase())) || ''));
         curp += removeAccents((Array.from(nombre.slice(1)).find(c => consonants.includes(c.toUpperCase())) || ''));
+        curp += generateRandomLetter();
+        curp += generateRandomNumber();
         return curp.toUpperCase();
     };
 
@@ -81,70 +91,72 @@ function Form() {
         if (!nombre || !apellidoPaterno || !apellidoMaterno || !dia || !mes || !ano || !sexo || !estado) {
             Swal.fire({
                 icon: 'error',
-                title: 'Oops...',
                 text: 'Todos los campos son obligatorios.',
             });
-            return; // Detiene la ejecución si algún campo está vacío
+            return;
         }
     
         const diaInt = parseInt(dia, 10);
         const mesInt = parseInt(mes, 10);
         const anoInt = parseInt(ano, 10);
     
-        // Validación básica del día y el mes
+        if (mesInt === 2 && diaInt === 29 && !(anoInt % 4 === 0 && (anoInt % 100 !== 0 || anoInt % 400 === 0))) {
+            Swal.fire({
+                icon: 'error',
+                text: 'El año no es bisiesto, febrero no puede tener 29 días.',
+            });
+            return;
+        }        
         if (diaInt < 1 || diaInt > 31) {
             Swal.fire({
                 icon: 'error',
-                title: 'Oops...',
                 text: 'El día debe estar entre 1 y 31.',
             });
-            return; // Detiene la ejecución si la validación falla
+            return;
         }
-    
         if (mesInt < 1 || mesInt > 12) {
             Swal.fire({
                 icon: 'error',
-                title: 'Oops...',
                 text: 'El mes debe estar entre 1 y 12.',
             });
             return; 
         }
-    
-        // Validación específica para febrero y años bisiestos
-        if (mesInt === 2 && diaInt > 29) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: 'Febrero no puede tener más de 29 días.',
-            });
-            return;
-        }
         if (!ano || ano.toString().length !== 4) {
             Swal.fire({
                 icon: 'error',
-                title: 'Oops...',
                 text: 'El año debe tener exactamente 4 dígitos.',
             });
-            return; // Detiene la ejecución si la validación falla
+            return; 
         }    
-        if (anoInt < 1950 || anoInt > 2024) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: 'El año debe estar entre 1950 y 2024.',
-            });
-            return; // Detiene la ejecución si la validación falla
+        if (anoInt < 1900 || anoInt > 2024) {
+            if (anoInt < 0) {
+                Swal.fire({
+                    icon: 'error',
+                    text: 'No se permiten números negativos.',
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    text: 'El año debe estar entre 1900 y 2024.',
+                });
+            }
+            return;
         }
-    
         if (mesInt === 2 && diaInt === 29 && !(anoInt % 4 === 0 && (anoInt % 100 !== 0 || anoInt % 400 === 0))) {
             Swal.fire({
                 icon: 'error',
-                title: 'Oops...',
                 text: 'El año no es bisiesto, febrero no puede tener 29 días.',
             });
             return;
         }
-    
+        const regex = /[^\w\s]/;
+        if (regex.test(nombre) || regex.test(apellidoPaterno) || regex.test(apellidoMaterno) || regex.test(estado)) {
+            Swal.fire({
+                icon: 'error',
+                text: 'Los campos no deben contener puntos o caracteres especiales.',
+            });
+            return;
+        }
         const curp = generateCURP();
         setFormData([...formData, { curp, nombre, apellidoPaterno, apellidoMaterno, dia, mes, ano, sexo, estado }]);
         Swal.fire({
@@ -155,15 +167,13 @@ function Form() {
         });
        
     };
-    
-    
     return ( 
         <>
             <div className="d-flex justify-content-center align-items-center vh-100">
                 <div className='form'>
                     <center>
-                        <form onSubmit={handleSubmit}>
-                            <p className="title">Registro para CURP</p>
+                        <form onSubmit={handleSubmit} className='size-form'>
+                            <p className="title">PROYECTO</p>
                             {!isCaptchaSolved && (
                                 <>
                                     <p className='text-center'>{captcha}</p>
@@ -173,82 +183,46 @@ function Form() {
                             )}
                         </form>
                     </center>
-                    <table className="centered-table">
-                        <thead>
-                            <tr>
-                                <th>CURP</th>
-                                <th>Nombre</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {formData.map((data, index) => (
-                                <tr key={index}>
-                                    <td>{data.curp}</td>
-                                    <td>{data.nombre}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
                     <form onSubmit={handleSubmitAlertDataForm} className="form">
-                        <input placeholder="Nombre(s)" type="text" className="input" onChange={e => setNombre(e.target.value)} />
-                        <input placeholder="Apellido Paterno" type="text" className="input" onChange={e => setApellidoPaterno(e.target.value)} />
-                        <input placeholder="Apellido Materno" type="text" className="input" onChange={e => setApellidoMaterno(e.target.value)} />
-                        <input placeholder="Día" type="number" className="input" onChange={e => setDia(e.target.value)} />
-                        <input placeholder="Mes" type="number" className="input" onChange={e => setMes(e.target.value)} />
-                        <input placeholder="Año" type="number" className="input" onChange={e => setAno(e.target.value)} />
-                        <select className="input" onChange={e => setSexo(e.target.value)}>
-                            <option value="">Sexo</option>
-                            <option value="hombre">Hombre</option>
-                            <option value="mujer">Mujer</option>
-                        </select>
-                        <select className="input" onChange={e => setEstado(e.target.value)}>
-                            <option value="">Selecciona un estado</option>
+                        <table className="centered-table">
+                            <thead>
+                                <tr>
+                                    <th>CURP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {formData.map((data, index) => (
+                                    <tr key={index}>
+                                        <td>{data.curp}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        <input placeholder="Nombre(s)" type="text" className="input" onChange={e => setNombre(e.target.value)} disabled={!isCaptchaSolved} />
+                        <input placeholder="Apellido Paterno" type="text" className="input" onChange={e => setApellidoPaterno(e.target.value)} disabled={!isCaptchaSolved} />
+                        <input placeholder="Apellido Materno" type="text" className="input" onChange={e => setApellidoMaterno(e.target.value)} disabled={!isCaptchaSolved} />
+                        <input placeholder="Día" type="number" className="input" onChange={e => setDia(e.target.value)} disabled={!isCaptchaSolved} />
+                        <input placeholder="Mes" type="number" className="input" onChange={e => setMes(e.target.value)} disabled={!isCaptchaSolved} />
+                        <input placeholder="Año" type="number" className="input" onChange={e => setAno(e.target.value)} disabled={!isCaptchaSolved} />
+                        <div className='chooise'>
+                            <select className="input" onChange={e => setSexo(e.target.value)} disabled={!isCaptchaSolved}>
+                                <option value="">Sexo</option>
+                                <option value="hombre">Hombre</option>
+                                <option value="mujer">Mujer</option>
+                            </select>
+                            <select className="input" onChange={e => setEstado(e.target.value)} disabled={!isCaptchaSolved}>
+                                <option value="">Selecciona un estado</option>
                                 <option value="CS">Chiapas</option>
-                                <option value="AS">Aguascalientes</option>
-                                <option value="BC">Baja California</option>
-                                <option value="BS">Baja California Sur</option>
-                                <option value="CC">Campeche</option>
-                                <option value="CH">Chihuahua</option>
-                                <option value="CL">Coahuila</option>
-                                <option value="CM">Colima</option>
-                                <option value="DG">Durango</option>
-                                <option value="DF">Distrito Federal</option>
-                                <option value="GT">Guanajuato</option>
-                                <option value="GR">Guerrero</option>
-                                <option value="HG">Hidalgo</option>
-                                <option value="JC">Jalisco</option>
-                                <option value="MN">Michoacán</option>
-                                <option value="MS">Morelos</option>
-                                <option value="MC">México</option>
-                                <option value="NT">Nayarit</option>
-                                <option value="NL">Nuevo León</option>
-                                <option value="OC">Oaxaca</option>
-                                <option value="PL">Puebla</option>
-                                <option value="QT">Querétaro</option>
-                                <option value="QR">Quintana Roo</option>
-                                <option value="SP">San Luis Potosí</option>
-                                <option value="SL">Sinaloa</option>
-                                <option value="SR">Sonora</option>
-                                <option value="TC">Tabasco</option>
-                                <option value="TS">Tamaulipas</option>
-                                <option value="TL">Tlaxcala</option>
-                                <option value="VZ">Veracruz</option>
-                                <option value="YN">Yucatán</option>
-                                <option value="ZS">Zacatecas</option>
-                        </select>
+                            </select>
+                        </div>
                         <div className="d-flex justify-content-center">
-                            <button className="btn mt-5 " type="submit"><i className="animation"></i>Generar CURP<i className="animation"></i></button>
+                            <button className="btn mt-5 " type="submit" disabled={!isCaptchaSolved}><i className="animation"></i>Generardor<i className="animation"></i></button>
                         </div>
                     </form>
                 </div>
             </div>
         </>
     );
-    
 }
 
 export default Form;
-
-                   
-                     
-                 
